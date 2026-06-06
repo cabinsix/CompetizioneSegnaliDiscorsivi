@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head> 
+  <meta charset="UTF-8">
+</head>
+<body>
+
+<h2 class="sr-only">Grafico divergente: differenze tra varianti (mi sembra, mi pare, mi sa) per fascia d'eta', area geografica e tipo di interazione.</h2>
+
+<style>
+.ctrl-bar{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.7rem;align-items:center}
+.section-label{font-size:11px;color:var(--color-text-tertiary);margin-right:2px;white-space:nowrap}
+.pill{font-size:12px;padding:3px 10px;border-radius:20px;border:0.5px solid var(--color-border-secondary);cursor:pointer;color:var(--color-text-secondary);background:transparent;transition:background .15s,color .15s}
+.pill.on-coral{color:#712B13;background:#FAECE7;border-color:#F0997B}
+.pill.on-purple{color:#3C3489;background:#EEEDFE;border-color:#AFA9EC}
+.pill.on-teal{color:#085041;background:#E1F5EE;border-color:#5DCAA5}
+.pill.on-amber{color:#633806;background:#FAEEDA;border-color:#EF9F27}
+.pill.on-blue{color:#185FA5;background:#E6F1FB;border-color:#85B7EB}
+.pill.on-pink{color:#993556;background:#FBEAF0;border-color:#ED93B1}
+.pill.on-green{color:#27500A;background:#EAF3DE;border-color:#97C459}
+.row-wrap{display:flex;align-items:center;gap:0;margin-bottom:5px}
+.row-label{width:160px;flex-shrink:0;font-size:12px;color:var(--color-text-secondary);text-align:right;padding-right:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-center{flex:1;position:relative;height:20px}
+.axis-line{position:absolute;left:50%;top:0;bottom:0;width:1px;background:var(--color-border-secondary)}
+.bar-neg{position:absolute;right:50%;top:3px;height:14px;border-radius:3px 0 0 3px;display:flex;align-items:center;justify-content:flex-start;padding-left:4px;box-sizing:border-box;overflow:hidden}
+.bar-pos{position:absolute;left:50%;top:3px;height:14px;border-radius:0 3px 3px 0;display:flex;align-items:center;justify-content:flex-end;padding-right:4px;box-sizing:border-box;overflow:hidden}
+.bar-val{font-size:10px;color:#fff;font-weight:600;white-space:nowrap;line-height:1}
+.group-head{display:flex;align-items:center;gap:8px;margin:1rem 0 6px}
+.group-badge{font-size:12px;font-weight:500;padding:3px 10px;border-radius:12px}
+.axis-labels{display:flex;font-size:11px;color:var(--color-text-tertiary);margin-bottom:4px}
+.no-data{font-size:13px;color:var(--color-text-tertiary);padding:16px 0;text-align:center}
+.count-badge{font-size:11px;background:var(--color-background-secondary);border:0.5px solid var(--color-border-tertiary);border-radius:10px;padding:2px 8px;color:var(--color-text-secondary)}
+.tag{font-size:11px;padding:1px 6px;border-radius:8px;margin-left:4px}
+</style>
+
+<div class="ctrl-bar">
+  <span class="section-label">Eta'</span>
+  <button class="pill on-coral" data-g="eta" data-v="Giovani (16/35)">Giovani 16/35</button>
+  <button class="pill on-purple" data-g="eta" data-v="Adulti (36/60)">Adulti 36/60</button>
+  <button class="pill on-teal" data-g="eta" data-v="Anziani (over 61)">Anziani 61+</button>
+</div>
+<div class="ctrl-bar">
+  <span class="section-label">Area</span>
+  <button class="pill on-amber" data-g="geo" data-v="Centro">Centro</button>
+  <button class="pill on-blue" data-g="geo" data-v="Nord">Nord</button>
+  <button class="pill on-pink" data-g="geo" data-v="Sud e Isole">Sud e Isole</button>
+</div>
+<div class="ctrl-bar">
+  <span class="section-label">Interazione</span>
+  <button class="pill on-green" data-g="int" data-v="conversazione libera">Conv. libera</button>
+  <button class="pill on-blue" data-g="int" data-v="intervista semistrutturata">Semistrutturata</button>
+  <button class="pill on-coral" data-g="int" data-v="istituzionale">Istituzionale</button>
+  <button class="pill on-amber" data-g="int" data-v="pasto">Pasto</button>
+</div>
+
+<div id="summary" style="margin:.5rem 0 1rem;display:flex;gap:8px;flex-wrap:wrap;align-items:center"></div>
+
+<div style="position:relative;margin-bottom:2px">
+  <div class="axis-labels" style="justify-content:space-between">
+    <span> prevale secondo elemento della coppia</span>
+    <span> prevale primo elemento della coppia </span>
+  </div>
+  <div style="display:flex;font-size:10px;color:var(--color-text-tertiary);margin-bottom:6px">
+    <div style="width:160px;flex-shrink:0"></div>
+    <div style="flex:1;display:flex;justify-content:space-between">
+      <span>-1.0</span><span>-0.5</span><span style="margin-left:auto;margin-right:auto">0</span><span>+0.5</span><span>+1.0</span>
+    </div>
+  </div>
+</div>
+
+<div id="chart"></div>
+
+<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:1.2rem;font-size:12px;color:var(--color-text-secondary)">
+  <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#C4317A"></span>mi sembra</span>
+  <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#1558B0"></span>mi pare</span>
+  <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:2px;background:#0E7A4E"></span>mi sa</span>
+  <span style="color:var(--color-text-tertiary);font-size:11px;margin-left:4px"> Il colore della barra indica la variante che prevale nella coppia</span>
+</div>
+
+<script>
+const RAW=[
+  {contrast:"mi_sembra / mi_sa",eta:"Giovani (16/35)",int:"conversazione libera",geo:"Centro",est:-0.5554},
+  {contrast:"mi_pare / mi_sa",eta:"Giovani (16/35)",int:"conversazione libera",geo:"Centro",est:-0.5505},
+  {contrast:"mi_sembra / mi_sa",eta:"Anziani (over 61)",int:"conversazione libera",geo:"Centro",est:0.7544},
+  {contrast:"mi_sembra / mi_pare",eta:"Adulti (36_60)",int:"intervista semistrutturata",geo:"Centro",est:0.7210},
+  {contrast:"mi_sembra / mi_sa",eta:"Adulti (36/60)",int:"intervista semistrutturata",geo:"Centro",est:0.7424},
+  {contrast:"mi_sembra / mi_pare",eta:"Anziani (over 61)",int:"intervista semistrutturata",geo:"Centro",est:0.7885},
+  {contrast:"mi_sembra / mi_sa",eta:"Anziani (over 61)",int:"intervista semistrutturata",geo:"Centro",est:0.8942},
+  {contrast:"mi_sembra / mi_sa",eta:"Giovani (16/35)",int:"pasto",geo:"Centro",est:-0.6266},
+  {contrast:"mi_pare / mi_sa",eta:"Giovani (16/35)",int:"pasto",geo:"Centro",est:-0.6757},
+  {contrast:"mi_sembra / mi_sa",eta:"Anziani (over 61)",int:"pasto",geo:"Centro",est:0.8298},
+  {contrast:"mi_sembra / mi_sa",eta:"Anziani (over 61)",int:"conversazione libera",geo:"Nord",est:0.6178},
+  {contrast:"mi_sembra / mi_pare",eta:"Adulti (36/60)",int:"intervista semistrutturata",geo:"Nord",est:0.5884},
+  {contrast:"mi_sembra / mi_sa",eta:"Adulti (36/60)",int:"intervista semistrutturata",geo:"Nord",est:0.7092},
+  {contrast:"mi_sembra / mi_pare",eta:"Anziani (over 61)",int:"intervista semistrutturata",geo:"Nord",est:0.6329},
+  {contrast:"mi_sembra / mi_sa",eta:"Anziani (over 61)",int:"intervista semistrutturata",geo:"Nord",est:0.8165},
+  {contrast:"mi_sembra / mi_pare",eta:"Giovani (16/35)",int:"istituzionale",geo:"Nord",est:-0.6249},
+  {contrast:"mi_pare / mi_sa",eta:"Giovani (16/35)",int:"istituzionale",geo:"Nord",est:0.6770},
+  {contrast:"mi_pare / mi_sa",eta:"Adulti (36/60)",int:"istituzionale",geo:"Nord",est:0.6127},
+  {contrast:"mi_pare / mi_sa",eta:"Anziani (over 61)",int:"istituzionale",geo:"Nord",est:0.6292},
+  {contrast:"mi_sembra / mi_sa",eta:"Giovani (16/35)",int:"pasto",geo:"Nord",est:-0.4974},
+  {contrast:"mi_pare / mi_sa",eta:"Giovani (16/35)",int:"pasto",geo:"Nord",est:-0.4604},
+  {contrast:"mi_sembra / mi_sa",eta:"Anziani (over 61)",int:"pasto",geo:"Nord",est:0.7195},
+  {contrast:"mi_sembra / mi_sa",eta:"Giovani (16/35)",int:"conversazione libera",geo:"Sud e Isole",est:-0.5690},
+  {contrast:"mi_pare / mi_sa",eta:"Anziani (over 61)",int:"conversazione libera",geo:"Sud e Isole",est:0.6534},
+  {contrast:"mi_sembra / mi_sa",eta:"Anziani (over 61)",int:"intervista semistrutturata",geo:"Sud e Isole",est:0.5935},
+  {contrast:"mi_pare / mi_sa",eta:"Anziani (over 61)",int:"intervista semistrutturata",geo:"Sud e Isole",est:0.4065},
+  {contrast:"mi_sembra / mi_pare",eta:"Giovani (16/35)",int:"istituzionale",geo:"Sud e Isole",est:-0.7948},
+  {contrast:"mi_pare / mi_sa",eta:"Giovani (16/35)",int:"istituzionale",geo:"Sud e Isole",est:0.7442},
+  {contrast:"mi_sembra / mi_pare",eta:"Adulti (36/60)",int:"istituzionale",geo:"Sud e Isole",est:-0.6708},
+  {contrast:"mi_pare / mi_sa",eta:"Adulti (36/60)",int:"istituzionale",geo:"Sud e Isole",est:0.8062},
+  {contrast:"mi_sembra / mi_pare",eta:"Anziani (over 61)",int:"istituzionale",geo:"Sud e Isole",est:-0.6759},
+  {contrast:"mi_pare / mi_sa",eta:"Anziani (over 61)",int:"istituzionale",geo:"Sud e Isole",est:0.8380},
+  {contrast:"mi_sembra / mi_sa",eta:"Giovani (16/35)",int:"pasto",geo:"Sud e Isole",est:-0.6776},
+  {contrast:"mi_pare / mi_sa",eta:"Giovani (16/35)",int:"pasto",geo:"Sud e Isole",est:-0.5227},
+  {contrast:"mi_sembra / mi_sa",eta:"Anziani (over 61)",int:"pasto",geo:"Sud e Isole",est:0.4570},
+  {contrast:"mi_pare / mi_sa",eta:"Anziani (over 61)",int:"pasto",geo:"Sud e Isole",est:0.5430},
+];
+
+const COL = { sembra: "#C4317A", pare: "#1558B0", sa: "#0E7A4E" };
+
+function barColor(d) {
+  if (d.contrast === "mi_sembra / mi_sa")   return d.est > 0 ? COL.sembra : COL.sa;
+  if (d.contrast === "mi_sembra / mi_pare") return d.est > 0 ? COL.sembra : COL.pare;
+  if (d.contrast === "mi_pare / mi_sa")     return d.est > 0 ? COL.pare   : COL.sa;
+}
+
+const ETA_ORDER=["Giovani (16/35)","Adulti (36/60)","Anziani (over 61)"];
+const ETA_SHORT={"Giovani (16/35)":"Giovani","Adulti (36/60)":"Adulti","Anziani (over 61)":"Anziani"};
+const ETA_BG={"Giovani (16/35)":"#FAECE7","Adulti (36/60)":"#EEEDFE","Anziani (over 61)":"#E1F5EE"};
+const ETA_FG={"Giovani (16/35)":"#993C1D","Adulti (36/60)":"#3C3489","Anziani (over 61)":"#085041"};
+const INT_SHORT={"conversazione libera":"Conv.","intervista semistrutturata":"Semistruct.","istituzionale":"Istit.","pasto":"Pasto"};
+const GEO_COL={"Centro":"#BA7517","Nord":"#185FA5","Sud e Isole":"#993556"};
+
+const active={eta:new Set(ETA_ORDER),geo:new Set(["Centro","Nord","Sud e Isole"]),int:new Set(["conversazione libera","intervista semistrutturata","istituzionale","pasto"])};
+
+document.querySelectorAll('.pill').forEach(btn=>{
+  const g=btn.dataset.g,v=btn.dataset.v,fset=active[g==='geo'?'geo':g==='int'?'int':'eta'];
+  if(fset.has(v))btn.classList.add('active');
+  btn.addEventListener('click',()=>{
+    if(fset.has(v)){if(fset.size>1){fset.delete(v);btn.classList.remove('active');}}
+    else{fset.add(v);btn.classList.add('active');}
+    render();
+  });
+});
+
+function rowHTML(d){
+  const pct=Math.abs(d.est)/1.0*50;
+  const col=barColor(d);
+  const valStr=(d.est>0?'+':'')+d.est.toFixed(2);
+  const geoCol=GEO_COL[d.geo];
+  const label=`${d.contrast.replace(/mi_/g,'').replace(' - ',' − ')} <span class="tag" style="background:${geoCol}22;color:${geoCol}">${d.geo==='Sud e Isole'?'Sud':d.geo}</span><span class="tag" style="background:var(--color-background-secondary);color:var(--color-text-tertiary)">${INT_SHORT[d.int]}</span>`;
+  if(d.est<0){
+    return `<div class="row-wrap">
+      <div class="row-label" title="${d.contrast} · ${d.geo} · ${d.int}">${label}</div>
+      <div class="bar-center">
+        <div class="axis-line"></div>
+        <div class="bar-neg" style="width:${pct.toFixed(1)}%;background:${col}">
+          <span class="bar-val">${valStr}</span>
+        </div>
+      </div>
+    </div>`;
+  } else {
+    return `<div class="row-wrap">
+      <div class="row-label" title="${d.contrast} · ${d.geo} · ${d.int}">${label}</div>
+      <div class="bar-center">
+        <div class="axis-line"></div>
+        <div class="bar-pos" style="width:${pct.toFixed(1)}%;background:${col}">
+          <span class="bar-val">${valStr}</span>
+        </div>
+      </div>
+    </div>`;
+  }
+}
+
+function render(){
+  const data=RAW.filter(d=>active.eta.has(d.eta)&&active.geo.has(d.geo)&&active.int.has(d.int));
+  document.getElementById('summary').innerHTML=`<span class="count-badge">${data.length} contrasti significativi</span>`;
+  const chart=document.getElementById('chart');
+  if(!data.length){chart.innerHTML='<p class="no-data">Nessun dato per la selezione corrente.</p>';return;}
+  let html='';
+  ETA_ORDER.filter(e=>active.eta.has(e)).forEach(eta=>{
+    const rows=data.filter(d=>d.eta===eta);
+    if(!rows.length)return;
+    const sorted=[...rows].sort((a,b)=>a.est-b.est);
+    html+=`<div class="group-head">
+      <span class="group-badge" style="background:${ETA_BG[eta]};color:${ETA_FG[eta]}">${ETA_SHORT[eta]}</span>
+      <span class="count-badge">${rows.length}</span>
+    </div>`;
+    sorted.forEach(d=>{html+=rowHTML(d);});
+  });
+  chart.innerHTML=html;
+}
+
+render();
+</script>
+
+</body>
+</html>
